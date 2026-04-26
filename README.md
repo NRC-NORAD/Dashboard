@@ -1,2 +1,865 @@
+[index (1).html](https://github.com/user-attachments/files/27096593/index.1.html)
 # Dashboard
 NRC NORAD Pathways Project Achievements
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NRC NORAD 2025 — Outcome Indicator Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --nrc-orange: #F26521;
+    --nrc-orange-dark: #C4501A;
+    --nrc-orange-light: #FDDCC8;
+    --nrc-orange-pale: #FEF3EC;
+    --navy: #1A1A1A;
+    --green: #375623;
+    --green-light: #C6EFCE;
+    --green-pale: #EAF5EE;
+    --amber: #9C5700;
+    --amber-light: #FFEB9C;
+    --red: #9C0006;
+    --red-light: #FFC7CE;
+    --grey: #5F5E5A;
+    --grey-dark: #3A3935;
+    --grey-light: #E8E7E3;
+    --grey-pale: #F5F4F1;
+    --text: #1a1a18;
+    --text-muted: #6b6a66;
+    --border: rgba(0,0,0,0.09);
+    --surface: #ffffff;
+    --bg: #F7F6F2;
+    /* accent used on charts/pills in overview/CO/indicator tabs */
+    --accent: var(--nrc-orange);
+    --accent-dark: var(--nrc-orange-dark);
+    --accent-light: var(--nrc-orange-light);
+    --accent-pale: var(--nrc-orange-pale);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    background: #1A1A1A;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px solid var(--nrc-orange);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+  }
+  .nrc-logo-wrap {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .header-title { color: #fff; }
+  .header-title h1 { font-size: 15px; font-weight: 500; letter-spacing: 0.01em; }
+  .header-title p { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+  .header-divider {
+    width: 1px; height: 32px;
+    background: rgba(255,255,255,0.15);
+    flex-shrink: 0;
+  }
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    padding: 14px 0;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; display: inline-block; }
+
+  /* ── Nav tabs ── */
+  .nav-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 67px;
+    z-index: 90;
+  }
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+  }
+  .nav-tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--nrc-orange); border-bottom-color: var(--nrc-orange); }
+
+  /* ── Layout ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── Section heading ── */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .section-head h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--nrc-orange-dark);
+  }
+  .section-head p { font-size: 13px; color: var(--text-muted); }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  /* ── Summary cards ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .stat-val { font-size: 28px; font-weight: 300; color: var(--text); line-height: 1; }
+  .stat-val.green { color: var(--green); }
+  .stat-val.amber { color: var(--amber); }
+  .stat-val.red { color: var(--red); }
+  .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── Outcome section ── */
+  .outcome-block { margin-bottom: 2.5rem; }
+  .outcome-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--nrc-orange-dark);
+    padding: 6px 12px;
+    background: var(--nrc-orange-pale);
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 14px;
+    border: 1px solid var(--nrc-orange-light);
+  }
+  .chart-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .leg-item { display: flex; align-items: center; gap: 6px; }
+  .leg-sq { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .leg-line { width: 16px; height: 2px; flex-shrink: 0; }
+
+  /* ── Pill ── */
+  .pill {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 12px; font-weight: 500;
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .pill.green { background: var(--green-light); color: var(--green); }
+  .pill.amber { background: var(--amber-light); color: var(--amber); }
+  .pill.red { background: var(--red-light); color: var(--red); }
+  .pill.grey { background: var(--grey-light); color: var(--grey); }
+
+  /* ── CO filter ── */
+  .co-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .co-btn {
+    padding: 7px 16px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+    border: 1px solid var(--border); border-radius: 20px;
+    background: var(--surface); color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .co-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .co-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  /* ── CO indicator cards ── */
+  .co-ind-grid { display: grid; gap: 8px; }
+  .co-ind-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 4px solid var(--blue-mid);
+  }
+  .co-ind-top { display: flex; align-items: center; gap: 12px; }
+  .co-ind-num { font-size: 12px; font-weight: 500; color: var(--text-muted); min-width: 30px; }
+  .co-ind-lbl { font-size: 13px; color: var(--text); flex: 1; }
+  .co-ind-val { font-size: 15px; font-weight: 500; min-width: 70px; text-align: right; }
+  .progress-bar { height: 4px; background: var(--grey-light); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+  .ind-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── Indicator list (by-indicator view) ── */
+  .ind-list { display: grid; gap: 6px; }
+  .ind-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  .ind-row:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .ind-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 16px; cursor: pointer;
+  }
+  .ind-header:hover { background: var(--grey-pale); }
+  .ind-code { font-size: 12px; font-weight: 500; color: var(--text-muted); min-width: 32px; }
+  .ind-name { font-size: 13px; color: var(--text); flex: 1; }
+  .ind-consol { font-size: 15px; font-weight: 500; min-width: 64px; text-align: right; }
+  .ind-chevron { color: var(--text-muted); font-size: 12px; transition: transform 0.2s; }
+  .ind-row.open .ind-chevron { transform: rotate(90deg); }
+  .ind-expand {
+    display: none;
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .ind-row.open .ind-expand { display: block; }
+  .yr-timeline {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 14px 0 16px;
+  }
+  .yr-block { text-align: center; }
+  .yr-label { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+  .yr-val { font-size: 18px; font-weight: 300; color: var(--text); }
+  .yr-tgt { font-size: 11px; color: var(--text-muted); }
+  .yr-block.highlight .yr-val { color: var(--navy); font-weight: 500; }
+  .co-breakdown { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-top: 6px; }
+  .co-mini {
+    background: var(--grey-pale);
+    border-radius: 8px;
+    padding: 10px 12px;
+    border-left: 3px solid #ccc;
+  }
+  .co-mini-name { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+  .co-mini-val { font-size: 14px; font-weight: 500; }
+  .co-mini-tgt { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* ── Heatmap ── */
+  .heatmap-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; overflow-x: auto; }
+  .heatmap-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .heatmap-table th { padding: 6px 10px; font-weight: 500; font-size: 11px; color: var(--text-muted); text-align: center; }
+  .heatmap-table th.ind-th { text-align: left; min-width: 200px; }
+  .heatmap-table td { padding: 5px 8px; text-align: center; }
+  .heatmap-table td.ind-td { text-align: left; font-size: 12px; padding: 5px 12px 5px 8px; color: var(--text-muted); }
+  .hm-cell {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 72px; height: 30px; border-radius: 5px;
+    font-weight: 500; font-size: 12px;
+  }
+  .hm-green { background: var(--green-light); color: var(--green); }
+  .hm-amber { background: var(--amber-light); color: var(--amber); }
+  .hm-red { background: var(--red-light); color: var(--red); }
+  .hm-grey { background: var(--grey-light); color: var(--grey); }
+  .hm-na { background: transparent; color: var(--grey-light); }
+  .outcome-divider td { padding-top: 10px; }
+  .out-group-badge {
+    display: inline-block; font-size: 10px; font-weight: 500;
+    padding: 2px 7px; border-radius: 4px;
+    background: var(--nrc-orange); color: #fff;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Footer ── */
+  .site-footer {
+    margin-top: 4rem;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .main { padding: 1rem; }
+    .nav-tab { padding: 12px 12px; font-size: 12px; }
+    .header-inner { padding: 0 1rem; }
+    .co-breakdown { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ── Fade-in animation ── */
+  .fade-in { animation: fadeIn 0.3s ease forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="nrc-logo-wrap">
+        <svg width="180" height="44" viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Norwegian Refugee Council">
+          <!-- Orange square -->
+          <rect x="0" y="0" width="44" height="44" fill="#F26521" rx="2"/>
+          <!-- NRC white letters -->
+          <text x="22" y="32" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="19" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">NRC</text>
+          <!-- Organisation name -->
+          <text x="54" y="17" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="12.5" fill="#ffffff" letter-spacing="1.2">NORWEGIAN</text>
+          <text x="54" y="33" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="12.5" fill="#ffffff" letter-spacing="1.2">REFUGEE COUNCIL</text>
+        </svg>
+      </div>
+      <div class="header-divider"></div>
+      <div class="header-title">
+        <h1>NORAD Education &amp; Livelihoods Programme</h1>
+        <p>Outcome Indicator Performance Dashboard · 2025 Reporting Year</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="dot"></span>
+      <span>Data current as of January 2026</span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-bar" role="navigation" aria-label="Dashboard views">
+  <div class="nav-inner">
+    <button class="nav-tab active" onclick="showView('overview', this)">Programme Performance</button>
+    <button class="nav-tab" onclick="showView('heatmap', this)">Results at a Glance</button>
+    <button class="nav-tab" onclick="showView('byco', this)">By Country Office</button>
+    <button class="nav-tab" onclick="showView('byind', this)">By Indicator</button>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- ── OVERVIEW ── -->
+  <section id="v-overview" class="view active" role="region" aria-label="Consolidated overview">
+    <div class="section-head" style="margin-bottom:1.5rem">
+      <h2>2025 at a glance</h2>
+      <p>All country offices combined</p>
+    </div>
+    <div class="stat-grid" id="stat-cards"></div>
+
+    <div class="outcome-block">
+      <div class="outcome-label">Outcome 1 — Education pathways</div>
+      <div class="chart-panel">
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-sq" style="background:#B4B2A9"></span>2024 actual</span>
+          <span class="leg-item"><span class="leg-sq" style="background:#F26521"></span>2025 actual</span>
+          <span class="leg-item"><span class="leg-line" style="background:#1A1A1A;border-top:2px dashed #1A1A1A"></span>2025 target</span>
+        </div>
+        <div style="position:relative;height:210px"><canvas id="c-o1" role="img" aria-label="Outcome 1 education indicators bar chart">Education indicators</canvas></div>
+      </div>
+    </div>
+
+    <div class="outcome-block">
+      <div class="outcome-label">Outcome 2 — Youth wellbeing &amp; civic engagement</div>
+      <div class="chart-panel">
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-sq" style="background:#B4B2A9"></span>2024 actual</span>
+          <span class="leg-item"><span class="leg-sq" style="background:#F26521"></span>2025 actual</span>
+          <span class="leg-item"><span class="leg-line" style="background:#1A1A1A;border-top:2px dashed #1A1A1A"></span>2025 target</span>
+        </div>
+        <div style="position:relative;height:190px"><canvas id="c-o2" role="img" aria-label="Outcome 2 wellbeing indicators bar chart">Wellbeing indicators</canvas></div>
+      </div>
+    </div>
+
+    <div class="outcome-block">
+      <div class="outcome-label">Outcome 3 — Livelihoods &amp; economic inclusion</div>
+      <div class="chart-panel">
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-sq" style="background:#B4B2A9"></span>2024 actual</span>
+          <span class="leg-item"><span class="leg-sq" style="background:#F26521"></span>2025 actual</span>
+          <span class="leg-item"><span class="leg-line" style="background:#1A1A1A;border-top:2px dashed #1A1A1A"></span>2025 target</span>
+        </div>
+        <div style="position:relative;height:190px"><canvas id="c-o3" role="img" aria-label="Outcome 3 livelihoods indicators bar chart">Livelihoods indicators</canvas></div>
+      </div>
+    </div>
+
+    <div class="outcome-block">
+      <div class="outcome-label">Institutional strengthening — actors supported (count indicators)</div>
+      <div class="chart-panel">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">These three indicators track the number of institutional actors strengthened through the programme. They are reported as counts rather than percentages, one per outcome area.</p>
+        <div id="actor-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── BY CO ── -->
+  <section id="v-byco" class="view" role="region" aria-label="By country office">
+    <div class="section-head" style="margin-bottom:1.5rem">
+      <h2>Country office performance</h2>
+      <p>Select a country office to view their 2025 results against targets</p>
+    </div>
+    <div class="co-filter" id="co-filter" role="group" aria-label="Country office selector"></div>
+    <div id="co-content"></div>
+  </section>
+
+  <!-- ── BY INDICATOR ── -->
+  <section id="v-byind" class="view" role="region" aria-label="By indicator">
+    <div class="section-head" style="margin-bottom:1.5rem">
+      <h2>Indicator deep-dive</h2>
+      <p>Click any indicator to see year-on-year data and country office breakdown</p>
+    </div>
+    <div class="ind-list" id="ind-list"></div>
+  </section>
+
+  <!-- ── HEATMAP ── -->
+  <section id="v-heatmap" class="view" role="region" aria-label="Achievement heatmap">
+    <div class="section-head" style="margin-bottom:1.5rem">
+      <h2>Achievement heatmap</h2>
+      <p>2025 actuals vs targets — all percentage indicators × all country offices</p>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:1rem;font-size:12px;color:var(--text-muted)">
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:var(--green-light);display:inline-block"></span>Met or exceeded target</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:var(--amber-light);display:inline-block"></span>75–99% of target</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:var(--red-light);display:inline-block"></span>Below 75% of target</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:var(--grey-light);display:inline-block"></span>No data / N/A</span>
+    </div>
+    <div class="heatmap-wrap" id="heatmap-wrap"></div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <span>Norwegian Refugee Council · NORAD-funded Education &amp; Livelihoods Programme · 2024–2027</span>
+  <span>Data current as of January 2026 · Country offices: Myanmar, NCA (Palestine/Jordan), Ethiopia, Palestine, Niger</span>
+</footer>
+
+<script>
+const DATA = {
+  "1":  { label:"% learners continuing education 6 months after transition", short:"Edu transition (Ind 1)", type:"pct", cos:{ Myanmar:{a25:null,t25:null,a24:null,t24:null,t26:null}, NCA:{a25:28.1,a25n:34,a25d:121,t25:50,a24:null,t24:50,t26:50}, Ethiopia:{a25:47,a25n:85,a25d:181,t25:60,a24:null,t24:null,t26:60}, Palestine:{a25:null,t25:null,a24:null,t24:null,t26:null}, Niger:{a25:60.4,a25n:350,a25d:579,t25:80,a24:null,t24:80,t26:80} }, consolidated:{a24:null,a25:53.2,a25n:469,a25d:881,t25:71.8,t26:71.8} },
+  "1.1":{ label:"# education actors strengthened", short:"Edu actors (1.1)", type:"count", cos:{ Myanmar:{a25:null,t25:null,a24:null,t24:null,t26:null}, NCA:{a25:1,t25:4,a24:null,t24:4,t26:4}, Ethiopia:{a25:3,t25:3,a24:3,t24:3,t26:3}, Palestine:{a25:null,t25:null,a24:null,t24:null,t26:null}, Niger:{a25:12,t25:19,a24:4,t24:19,t26:19} }, consolidated:{a24:null,a25:16,t25:26,t26:26} },
+  "1.2":{ label:"% with improved psychosocial wellbeing (education)", short:"PSS wellbeing edu (1.2)", type:"pct", cos:{ Myanmar:{a25:null,t25:null,a24:null,t24:null,t26:null}, NCA:{a25:95.6,a25n:87,a25d:91,t25:70,a24:null,t24:70,t26:70}, Ethiopia:{a25:72.5,a25n:277,a25d:382,t25:80,a24:null,t24:null,t26:80}, Palestine:{a25:null,t25:null,a24:null,t24:null,t26:null}, Niger:{a25:79.4,a25n:650,a25d:819,t25:80,a24:null,t24:80,t26:80} }, consolidated:{a24:null,a25:78.5,a25n:1014,a25d:1292,t25:79.3,t26:79.3} },
+  "1.3":{ label:"% completing learners passing NFE exam", short:"NFE exam pass (1.3)", type:"pct", cos:{ Myanmar:{a25:null,t25:null,a24:null,t24:null,t26:null}, NCA:{a25:28.1,a25n:34,a25d:121,t25:70,a24:null,t24:70,t26:70}, Ethiopia:{a25:96.7,a25n:58,a25d:60,t25:80,a24:null,t24:null,t26:80}, Palestine:{a25:null,t25:null,a24:null,t24:null,t26:null}, Niger:{a25:null,t25:null,a24:null,t24:null,t26:null} }, consolidated:{a24:null,a25:50.8,a25n:92,a25d:181,t25:73.3,t26:73.3} },
+  "2":  { label:"% young people reporting positive change in wellbeing", short:"Composite wellbeing (Ind 2)", type:"pct", cos:{ Myanmar:{a25:100,a25n:95,a25d:95,t25:60,a24:100,t24:null,t26:60}, NCA:{a25:95.6,a25n:86,a25d:90,t25:70,a24:null,t24:null,t26:70}, Ethiopia:{a25:91.3,a25n:409,a25d:448,t25:70,a24:null,t24:70,t26:70}, Palestine:{a25:null,t25:50,a24:null,t24:50,t26:50}, Niger:{a25:79.4,a25n:650,a25d:819,t25:70,a24:null,t24:70,t26:70} }, consolidated:{a24:100,a25:85.4,a25n:1240,a25d:1452,t25:69.3,t26:69.3} },
+  "2.1":{ label:"# youth civil society actors strengthened", short:"Youth actors (2.1)", type:"count", cos:{ Myanmar:{a25:null,t25:2,a24:null,t24:null,t26:2}, NCA:{a25:1,t25:4,a24:null,t24:null,t26:4}, Ethiopia:{a25:6,t25:6,a24:6,t24:6,t26:6}, Palestine:{a25:null,t25:26,a24:null,t24:null,t26:26}, Niger:{a25:15,t25:15,a24:null,t24:15,t26:0} }, consolidated:{a24:6,a25:22,t25:53,t26:38} },
+  "2.2":{ label:"% leading community projects / improved engagement opportunities", short:"Community engagement (2.2)", type:"pct", cos:{ Myanmar:{a25:98.6,a25n:136,a25d:138,t25:60,a24:null,t24:null,t26:60}, NCA:{a25:100,a25n:17,a25d:17,t25:80,a24:null,t24:null,t26:80}, Ethiopia:{a25:97.8,a25n:438,a25d:448,t25:80,a24:null,t24:80,t26:80}, Palestine:{a25:null,t25:70,a24:null,t24:70,t26:70}, Niger:{a25:null,t25:70,a24:null,t24:70,t26:70} }, consolidated:{a24:null,a25:98,a25n:591,a25d:603,t25:75.4,t26:75.4} },
+  "2.3":{ label:"% who say mentoring helped them choose and pursue new opportunities", short:"Mentoring effectiveness (2.3)", type:"pct", cos:{ Myanmar:{a25:97.8,a25n:134,a25d:137,t25:80,a24:100,t24:80,t26:80}, NCA:{a25:87.5,a25n:70,a25d:80,t25:70,a24:null,t24:null,t26:70}, Ethiopia:{a25:98.4,a25n:313,a25d:318,t25:70,a24:null,t24:70,t26:70}, Palestine:{a25:null,t25:70,a24:null,t24:70,t26:70}, Niger:{a25:null,t25:70,a24:null,t24:70,t26:70} }, consolidated:{a24:100,a25:96.6,a25n:517,a25d:535,t25:72.6,t26:72.6} },
+  "3":  { label:"% receiving transitional support reporting income increase", short:"Income increase (Ind 3)", type:"pct", cos:{ Myanmar:{a25:84.1,a25n:111,a25d:132,t25:40,a24:null,t24:null,t26:40}, NCA:{a25:100,a25n:29,a25d:29,t25:67,a24:null,t24:null,t26:67}, Ethiopia:{a25:89.8,a25n:291,a25d:324,t25:50,a24:null,t24:null,t26:50}, Palestine:{a25:null,t25:45,a24:null,t24:null,t26:45}, Niger:{a25:null,t25:60,a24:null,t24:null,t26:null} }, consolidated:{a24:null,a25:88.9,a25n:431,a25d:485,t25:48.3,t26:48.3} },
+  "3.1":{ label:"# market system actors strengthened", short:"Market actors (3.1)", type:"count", cos:{ Myanmar:{a25:null,t25:2,a24:null,t24:null,t26:3}, NCA:{a25:3,t25:5,a24:3,t24:5,t26:5}, Ethiopia:{a25:9,t25:9,a24:4,t24:4,t26:13}, Palestine:{a25:null,t25:1,a24:null,t24:null,t26:1}, Niger:{a25:null,t25:5,a24:1,t24:5,t26:5} }, consolidated:{a24:null,a25:12,t25:22,t26:27} },
+  "3.2":{ label:"% with improved psychosocial wellbeing (TVET)", short:"PSS wellbeing TVET (3.2)", type:"pct", cos:{ Myanmar:{a25:70.2,a25n:87,a25d:124,t25:80,a24:100,t24:80,t26:80}, NCA:{a25:100,a25n:65,a25d:65,t25:70,a24:null,t24:null,t26:70}, Ethiopia:{a25:69.3,a25n:147,a25d:212,t25:80,a24:null,t24:80,t26:80}, Palestine:{a25:null,t25:70,a24:null,t24:null,t26:70}, Niger:{a25:null,t25:60,a24:null,t24:60,t26:60} }, consolidated:{a24:100,a25:74.6,a25n:299,a25d:401,t25:78.4,t26:78.4} },
+  "3.3":{ label:"% TVET graduates accessing job and business opportunities", short:"Job/biz access (3.3)", type:"pct", cos:{ Myanmar:{a25:86.3,a25n:113,a25d:131,t25:80,a24:100,t24:80,t26:80}, NCA:{a25:54.4,a25n:31,a25d:57,t25:60,a24:98,t24:null,t26:60}, Ethiopia:{a25:97.4,a25n:262,a25d:269,t25:68,a24:null,t24:68,t26:68}, Palestine:{a25:null,t25:70,a24:null,t24:null,t26:70}, Niger:{a25:null,t25:60,a24:null,t24:60,t26:60} }, consolidated:{a24:99,a25:88.8,a25n:406,a25d:457,t25:70.4,t26:70.4} }
+};
+
+const COS = ['Myanmar','NCA','Ethiopia','Palestine','Niger'];
+const NOT_APPLICABLE = {
+  Myanmar:   ['1','1.1','1.2','1.3'],
+  NCA:       [],
+  Ethiopia:  [],
+  Palestine: ['1','1.1','1.2','1.3'],
+  Niger:     ['1.3']
+};
+const CO_COLORS = { Myanmar:'#1F4E79', NCA:'#375623', Ethiopia:'#9C5700', Palestine:'#534AB7', Niger:'#993C1D' };
+const IND_KEYS = Object.keys(DATA);
+
+function achClass(a,t){
+  if(a==null||t==null) return 'grey';
+  const r=a/t;
+  return r>=1?'green':r>=0.75?'amber':'red';
+}
+
+function fmtPct(v){ return v!=null ? v.toFixed(1).replace(/\.0$/,'')+'%' : '—'; }
+function fmtCount(v){ return v!=null ? String(v) : '—'; }
+function fmtVal(ind,v){ return DATA[ind].type==='pct' ? fmtPct(v) : fmtCount(v); }
+
+function pillHTML(a,t,type){
+  if(a==null) return '<span class="pill grey">No data</span>';
+  const cl = type==='pct' ? achClass(a,t) : (t!=null?(a/t>=1?'green':a/t>=0.75?'amber':'red'):'grey');
+  const sign = (t!=null&&a>=t)?'▲':(t!=null&&a<t)?'▼':'';
+  return `<span class="pill ${cl}">${sign} ${type==='pct'?fmtPct(a):fmtCount(a)}</span>`;
+}
+
+/* ── Summary cards ── */
+function buildStatCards(){
+  const pkeys  = IND_KEYS.filter(k=>DATA[k].type==='pct');
+  const ckeys  = IND_KEYS.filter(k=>DATA[k].type==='count');
+  const met    = pkeys.filter(k=>{const c=DATA[k].consolidated;return c.a25!=null&&c.t25!=null&&c.a25>=c.t25;}).length;
+  const amber  = pkeys.filter(k=>{const c=DATA[k].consolidated;return c.a25!=null&&c.t25!=null&&c.a25/c.t25>=0.75&&c.a25<c.t25;}).length;
+  const below  = pkeys.filter(k=>{const c=DATA[k].consolidated;return c.a25!=null&&c.t25!=null&&c.a25/c.t25<0.75;}).length;
+  const nodata = IND_KEYS.filter(k=>{const c=DATA[k].consolidated;return c.a25==null;}).length;
+  document.getElementById('stat-cards').innerHTML =
+    `<div class="stat-card"><div class="stat-label">Met or exceeded target</div><div class="stat-val green">${met}</div><div class="stat-sub">of ${pkeys.length} percentage indicators</div></div>
+     <div class="stat-card"><div class="stat-label">Within 25% of target</div><div class="stat-val amber">${amber}</div><div class="stat-sub">75–99% achievement rate</div></div>
+     <div class="stat-card"><div class="stat-label">Below 75% of target</div><div class="stat-val red">${below}</div><div class="stat-sub">require attention</div></div>
+     <div class="stat-card"><div class="stat-label">Tracked as counts only</div><div class="stat-val" style="font-size:22px;color:var(--grey)">${ckeys.length}</div><div class="stat-sub">Institutional actor indicators (1.1, 2.1, 3.1)</div></div>
+     <div class="stat-card"><div class="stat-label">No 2025 data reported</div><div class="stat-val" style="font-size:22px;color:var(--grey)">${nodata}</div><div class="stat-sub">Across all ${IND_KEYS.length} indicators</div></div>
+     <div class="stat-card"><div class="stat-label">Country offices reporting</div><div class="stat-val" style="font-size:22px">4</div><div class="stat-sub">Myanmar · NCA · Ethiopia · Niger</div></div>`;
+}
+
+/* ── Institutional actor cards (overview) ── */
+function buildActorCards(){
+  const ACTOR_INDS = [
+    { key:'1.1', outcome:'Outcome 1', label:'# of education actors strengthened', desc:'Education institutions, ministries, working groups, school committees' },
+    { key:'2.1', outcome:'Outcome 2', label:'# of youth civil society actors strengthened', desc:'Youth-led/focused organisations, community structures, local authorities, youth ministries' },
+    { key:'3.1', outcome:'Outcome 3', label:'# of market system actors strengthened', desc:'Private sector, TVET institutions, ministries & authorities' },
+  ];
+  const el = document.getElementById('actor-cards');
+  el.innerHTML = ACTOR_INDS.map(({key, outcome, label, desc})=>{
+    const c = DATA[key].consolidated;
+    const a = c.a25, t = c.t25, a24 = c.a24;
+    const pct = (a!=null && t!=null) ? Math.round(a/t*100) : null;
+    const cl  = pct!=null ? (pct>=100?'green':pct>=75?'amber':'red') : 'grey';
+    const clBg  = {green:'var(--green-light)',  amber:'var(--amber-light)',  red:'var(--red-light)',  grey:'var(--grey-light)' }[cl];
+    const clTx  = {green:'var(--green)',         amber:'var(--amber)',         red:'var(--red)',         grey:'var(--grey)'       }[cl];
+    const barW  = pct!=null ? Math.min(100, pct) : 0;
+
+    const coRows = ['NCA','Ethiopia','Niger'].map(co=>{
+      const d = DATA[key].cos[co];
+      const ca = d.a25, ct = d.t25;
+      if(ca==null && ct==null) return '';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-top:0.5px solid var(--border)">
+        <span style="font-size:11px;color:var(--text-muted)">${co}</span>
+        <span style="font-size:12px;font-weight:500">${ca!=null?ca:'—'} <span style="font-weight:400;color:var(--text-muted)">/ ${ct!=null?ct:'—'}</span></span>
+      </div>`;
+    }).filter(Boolean).join('');
+
+    return `<div style="background:var(--grey-pale);border-radius:10px;padding:16px;border:1px solid var(--border)">
+      <div style="font-size:10px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">${outcome} · Ind ${key}</div>
+      <div style="font-size:13px;color:var(--text);margin-bottom:12px">${label}</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px">
+        <span style="font-size:28px;font-weight:300;color:var(--navy)">${a!=null?a:'—'}</span>
+        <span style="font-size:13px;color:var(--text-muted)">of ${t!=null?t:'—'} target</span>
+        ${pct!=null?`<span style="margin-left:auto;font-size:12px;font-weight:500;padding:2px 8px;border-radius:10px;background:${clBg};color:${clTx}">${pct}%</span>`:''}
+      </div>
+      <div style="height:4px;background:var(--grey-light);border-radius:2px;margin-bottom:10px;overflow:hidden">
+        <div style="height:100%;width:${barW}%;background:var(--navy);border-radius:2px;transition:width 0.6s ease"></div>
+      </div>
+      ${a24!=null?`<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">2024 actual: ${a24}</div>`:''}
+      <div style="font-size:11px;color:var(--text-muted);font-style:italic;margin-bottom:10px">${desc}</div>
+      ${coRows?`<div style="margin-top:6px">${coRows}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ── Outcome charts ── */
+function makeChart(canvasId, keys, h){
+  const pkeys = keys.filter(k=>DATA[k].type==='pct');
+  if(!pkeys.length) return;
+  document.getElementById(canvasId).closest('[style]').style.height = h+'px';
+  new Chart(document.getElementById(canvasId),{
+    type:'bar',
+    data:{
+      labels: pkeys.map(k=>DATA[k].short),
+      datasets:[
+        { label:'2024 actual', data:pkeys.map(k=>DATA[k].consolidated.a24), backgroundColor:'#D3D1C7', borderRadius:4, borderSkipped:false, barPercentage:0.5, categoryPercentage:0.7 },
+        { label:'2025 actual', data:pkeys.map(k=>DATA[k].consolidated.a25), backgroundColor:'#F26521', borderRadius:4, borderSkipped:false, barPercentage:0.7, categoryPercentage:0.7 },
+        { label:'2025 target', data:pkeys.map(k=>DATA[k].consolidated.t25), type:'scatter', showLine:false, pointStyle:'line', pointRotation:90, pointRadius:16, pointBorderWidth:2.5, pointBorderColor:'#1A1A1A', pointHoverRadius:16 }
+      ]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>ctx.dataset.label+': '+(ctx.raw!=null?typeof ctx.raw==='number'?ctx.raw.toFixed(1)+'%':ctx.raw:'N/A') } } },
+      scales:{
+        x:{ min:0, max:108, ticks:{ callback:v=>v+'%', font:{size:11}, color:'#888780' }, grid:{ color:'rgba(0,0,0,0.05)' }, border:{display:false} },
+        y:{ ticks:{ font:{size:12}, color:'#5F5E5A' }, grid:{display:false}, border:{display:false} }
+      }
+    }
+  });
+}
+
+/* ── By CO ── */
+function buildCOFilter(){
+  document.getElementById('co-filter').innerHTML = COS.map(co=>
+    `<button class="co-btn" data-co="${co}" onclick="renderCO('${co}')">${co}</button>`
+  ).join('');
+}
+
+let coChartInstances = {};
+
+function renderCO(co){
+  document.querySelectorAll('.co-btn').forEach(b=>b.classList.toggle('active', b.dataset.co===co));
+  const naList = NOT_APPLICABLE[co] || [];
+  const applicable = IND_KEYS.filter(k=>!naList.includes(k));
+  const pctKeys  = applicable.filter(k=>DATA[k].type==='pct');
+  const countKeys = applicable.filter(k=>DATA[k].type==='count');
+  const repPct   = pctKeys.filter(k=>DATA[k].cos[co].a25!=null);
+  const met      = repPct.filter(k=>{const d=DATA[k].cos[co];return d.t25&&d.a25>=d.t25;}).length;
+  const below    = repPct.filter(k=>{const d=DATA[k].cos[co];return d.a25!=null&&d.t25!=null&&d.a25<d.t25;}).length;
+
+  const GROUPS = [
+    { label:'Outcome 1 — Education pathways',          keys:['1','1.1','1.2','1.3'] },
+    { label:'Outcome 2 — Youth wellbeing & engagement', keys:['2','2.1','2.2','2.3'] },
+    { label:'Outcome 3 — Livelihoods & economic inclusion', keys:['3','3.1','3.2','3.3'] },
+  ];
+
+  let html = `<div class="stat-grid" style="margin-bottom:1.5rem">
+    <div class="stat-card"><div class="stat-label">Targets met</div><div class="stat-val green">${met}</div><div class="stat-sub">of ${repPct.length} pct indicators with data</div></div>
+    <div class="stat-card"><div class="stat-label">Within 25% of target</div><div class="stat-val amber">${repPct.filter(k=>{const d=DATA[k].cos[co];return d.a25!=null&&d.t25!=null&&d.a25/d.t25>=0.75&&d.a25<d.t25;}).length}</div></div>
+    <div class="stat-card"><div class="stat-label">Below 75% of target</div><div class="stat-val red">${below}</div></div>
+  </div>`;
+
+  GROUPS.forEach((g, gi)=>{
+    const gPct   = g.keys.filter(k=>applicable.includes(k) && DATA[k].type==='pct');
+    const gCount = g.keys.filter(k=>applicable.includes(k) && DATA[k].type==='count');
+    if(!gPct.length && !gCount.length) return;
+    const chartId = `co-chart-${co.replace(/\s/g,'-')}-${gi}`;
+    const chartH  = Math.max(120, gPct.length * 52 + 50);
+    html += `<div class="outcome-block">
+      <div class="outcome-label">${g.label}</div>
+      <div class="chart-panel">`;
+
+    if(gPct.length){
+      html += `<div class="chart-legend">
+        <span class="leg-item"><span class="leg-sq" style="background:#B4B2A9"></span>2024 actual</span>
+        <span class="leg-item"><span class="leg-sq" style="background:#F26521"></span>2025 actual</span>
+        <span class="leg-item"><span class="leg-line" style="background:#1A1A1A;border-top:2px dashed #1A1A1A"></span>2025 target</span>
+      </div>
+      <div style="position:relative;height:${chartH}px;margin-bottom:${gCount.length?'16px':'0'}">
+        <canvas id="${chartId}" role="img" aria-label="${g.label} indicators for ${co}"></canvas>
+      </div>`;
+    }
+
+    if(gCount.length){
+      html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;${gPct.length?'border-top:0.5px solid var(--border);padding-top:14px':''}">`;
+      gCount.forEach(k=>{
+        const d=DATA[k].cos[co];
+        const a=d.a25, t=d.t25;
+        const pct = (a!=null&&t!=null) ? Math.round(a/t*100) : null;
+        const cl  = pct!=null?(pct>=100?'green':pct>=75?'amber':'red'):'grey';
+        const clBg = {green:'var(--green-light)',amber:'var(--amber-light)',red:'var(--red-light)',grey:'var(--grey-light)'}[cl];
+        const clTx = {green:'var(--green)',amber:'var(--amber)',red:'var(--red)',grey:'var(--grey)'}[cl];
+        html += `<div style="background:var(--grey-pale);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Ind ${k}</div>
+          <div style="font-size:12px;color:var(--text);margin-bottom:8px">${DATA[k].label}</div>
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font-size:24px;font-weight:300;color:var(--navy)">${a!=null?a:'—'}</span>
+            <span style="font-size:12px;color:var(--text-muted)">of ${t!=null?t:'—'}</span>
+            ${pct!=null?`<span style="margin-left:auto;font-size:11px;font-weight:500;padding:2px 7px;border-radius:8px;background:${clBg};color:${clTx}">${pct}%</span>`:''}
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `</div></div>`;
+  });
+
+  document.getElementById('co-content').innerHTML = `<div class="fade-in">${html}</div>`;
+
+  // Destroy old chart instances for this CO
+  Object.keys(coChartInstances).filter(id=>id.startsWith(`co-chart-${co.replace(/\s/g,'-')}`)).forEach(id=>{
+    coChartInstances[id].destroy(); delete coChartInstances[id];
+  });
+
+  // Build charts
+  setTimeout(()=>{
+    GROUPS.forEach((g, gi)=>{
+      const gPct = g.keys.filter(k=>applicable.includes(k) && DATA[k].type==='pct');
+      if(!gPct.length) return;
+      const chartId = `co-chart-${co.replace(/\s/g,'-')}-${gi}`;
+      const canvas  = document.getElementById(chartId);
+      if(!canvas) return;
+      const inst = new Chart(canvas, {
+        type:'bar',
+        data:{
+          labels: gPct.map(k=>DATA[k].short),
+          datasets:[
+            { label:'2024 actual', data:gPct.map(k=>DATA[k].cos[co].a24||null), backgroundColor:'#D3D1C7', borderRadius:4, borderSkipped:false, barPercentage:0.5, categoryPercentage:0.7 },
+            { label:'2025 actual', data:gPct.map(k=>DATA[k].cos[co].a25||null), backgroundColor:'#F26521', borderRadius:4, borderSkipped:false, barPercentage:0.7, categoryPercentage:0.7 },
+            { label:'2025 target', data:gPct.map(k=>DATA[k].cos[co].t25||null), type:'scatter', showLine:false, pointStyle:'line', pointRotation:90, pointRadius:16, pointBorderWidth:2.5, pointBorderColor:'#1A1A1A', pointHoverRadius:16 }
+          ]
+        },
+        options:{
+          indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>ctx.dataset.label+': '+(ctx.raw!=null?typeof ctx.raw==='number'?ctx.raw.toFixed(1)+'%':ctx.raw:'N/A') } } },
+          scales:{
+            x:{ min:0, max:108, ticks:{ callback:v=>v+'%', font:{size:11}, color:'#888780' }, grid:{ color:'rgba(0,0,0,0.05)' }, border:{display:false} },
+            y:{ ticks:{ font:{size:12}, color:'#5F5E5A' }, grid:{display:false}, border:{display:false} }
+          }
+        }
+      });
+      coChartInstances[chartId] = inst;
+    });
+  }, 50);
+}
+
+/* ── By indicator ── */
+function buildIndList(){
+  const groups = [
+    {label:'Outcome 1 — Education pathways', keys:['1','1.1','1.2','1.3']},
+    {label:'Outcome 2 — Youth wellbeing & civic engagement', keys:['2','2.1','2.2','2.3']},
+    {label:'Outcome 3 — Livelihoods & economic inclusion', keys:['3','3.1','3.2','3.3']},
+  ];
+  let html='';
+  groups.forEach(g=>{
+    html+=`<div style="margin-bottom:0.5rem;margin-top:1.25rem"><span class="outcome-label">${g.label}</span></div>`;
+    g.keys.forEach(k=>{
+      const c=DATA[k].consolidated;
+      const isC=DATA[k].type==='count';
+      const a=c.a25, t=c.t25;
+      const cl=isC?(a!=null&&t!=null?(a/t>=1?'green':a/t>=0.75?'amber':'red'):'grey'):achClass(a,t);
+      const clColors={green:['var(--green-light)','var(--green)'],amber:['var(--amber-light)','var(--amber)'],red:['var(--red-light)','var(--red)'],grey:['var(--grey-light)','var(--grey)']};
+      const [bg,tx]=clColors[cl];
+      html+=`<div class="ind-row" id="irow-${k}">
+        <div class="ind-header" onclick="toggleInd('${k}')">
+          <span class="ind-code">${k}</span>
+          <span class="ind-name">${DATA[k].label}</span>
+          <span class="ind-consol" style="background:${bg};color:${tx};padding:3px 10px;border-radius:12px">${isC?fmtCount(a):fmtPct(a)}</span>
+          <span class="ind-chevron">&#9654;</span>
+        </div>
+        <div class="ind-expand" id="iex-${k}">
+          <div class="yr-timeline">
+            <div class="yr-block"><div class="yr-label">2024 actual</div><div class="yr-val">${isC?fmtCount(c.a24):fmtPct(c.a24)}</div></div>
+            <div class="yr-block highlight"><div class="yr-label">2025 actual</div><div class="yr-val">${isC?fmtCount(a):fmtPct(a)}</div><div class="yr-tgt">Target: ${isC?fmtCount(t):fmtPct(t)}</div></div>
+            <div class="yr-block"><div class="yr-label">2026 target</div><div class="yr-val">${isC?fmtCount(c.t26):fmtPct(c.t26)}</div></div>
+          </div>
+          <div class="eyebrow">Country office breakdown</div>
+          <div class="co-breakdown">
+            ${COS.map(co=>{
+              const d=DATA[k].cos[co];
+              const ca=d.a25, ct=d.t25;
+              const ccl=isC?(ca!=null&&ct!=null?(ca/ct>=1?'green':ca/ct>=0.75?'amber':'red'):'grey'):achClass(ca,ct);
+              const cbgs={green:'var(--green-light)',amber:'var(--amber-light)',red:'var(--red-light)',grey:'var(--grey-light)'};
+              const ctxs={green:'var(--green)',amber:'var(--amber)',red:'var(--red)',grey:'var(--grey)'};
+              return `<div class="co-mini" style="border-left-color:${CO_COLORS[co]}">
+                <div class="co-mini-name">${co}</div>
+                <div class="co-mini-val" style="background:${cbgs[ccl]};color:${ctxs[ccl]};padding:2px 8px;border-radius:8px;display:inline-block">${isC?fmtCount(ca):fmtPct(ca)}</div>
+                <div class="co-mini-tgt">Target: ${isC?fmtCount(ct):fmtPct(ct)}</div>
+                ${!isC&&ca!=null&&ct!=null?`<div class="progress-bar" style="margin-top:5px"><div class="progress-fill" style="width:${Math.min(100,(ca/ct)*100).toFixed(0)}%;background:${ctxs[ccl]}"></div></div>`:''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+  document.getElementById('ind-list').innerHTML = html;
+}
+
+function toggleInd(k){
+  const row=document.getElementById('irow-'+k);
+  const ex=document.getElementById('iex-'+k);
+  const open=row.classList.contains('open');
+  document.querySelectorAll('.ind-row').forEach(r=>r.classList.remove('open'));
+  if(!open){ row.classList.add('open'); }
+}
+
+/* ── Heatmap ── */
+function buildHeatmap(){
+  const pkeys = IND_KEYS.filter(k=>DATA[k].type==='pct');
+  const groups = [
+    {label:'Outcome 1 — Education pathways', keys:pkeys.filter(k=>k.startsWith('1'))},
+    {label:'Outcome 2 — Youth wellbeing & engagement', keys:pkeys.filter(k=>k.startsWith('2'))},
+    {label:'Outcome 3 — Livelihoods & economic inclusion', keys:pkeys.filter(k=>k.startsWith('3'))},
+  ];
+  const hmClass={green:'hm-green',amber:'hm-amber',red:'hm-red',grey:'hm-grey'};
+  // Consolidated column header with orange accent
+  const consolHdr = `<th style="background:#1A1A1A;color:#fff;border-radius:6px 6px 0 0;padding:8px 10px;font-size:12px;letter-spacing:0.03em">Consolidated</th>`;
+  let html=`<table class="heatmap-table"><thead><tr>
+    <th class="ind-th">Indicator</th>
+    ${COS.map(co=>`<th style="color:${CO_COLORS[co]}">${co}</th>`).join('')}
+    ${consolHdr}
+  </tr></thead><tbody>`;
+  groups.forEach(g=>{
+    html+=`<tr class="outcome-divider"><td colspan="${COS.length+2}" style="padding:12px 8px 5px"><span class="out-group-badge">${g.label}</span></td></tr>`;
+    g.keys.forEach(k=>{
+      const c=DATA[k].consolidated;
+      const ca=c.a25, ct=c.t25;
+      html+=`<tr><td class="ind-td"><strong>${k}</strong> ${DATA[k].label.substring(0,42)}${DATA[k].label.length>42?'…':''}</td>`;
+      COS.forEach(co=>{
+        const na = (NOT_APPLICABLE[co]||[]).includes(k);
+        if(na){
+          html+=`<td><span class="hm-cell" style="background:transparent;color:#D0CECC;font-size:11px">n/a</span></td>`;
+          return;
+        }
+        const d=DATA[k].cos[co];
+        const a=d.a25, t=d.t25;
+        const cl=achClass(a,t);
+        html+=`<td><span class="${'hm-cell '+hmClass[cl]}">${fmtPct(a)}</span></td>`;
+      });
+      // Consolidated — accentuated: larger, bold, dark border
+      const ccl=achClass(ca,ct);
+      const consolBg={green:'#C6EFCE',amber:'#FFEB9C',red:'#FFC7CE',grey:'#E8E7E3'}[ccl];
+      const consolTx={green:'#1E3D10',amber:'#6B3800',red:'#6B0004',grey:'#3A3935'}[ccl];
+      html+=`<td style="border-left:2px solid #1A1A1A">
+        <span class="hm-cell" style="background:${consolBg};color:${consolTx};font-weight:700;font-size:13px;width:84px;height:34px;border:1.5px solid ${consolTx}30">
+          ${fmtPct(ca)}
+        </span>
+      </td></tr>`;
+    });
+  });
+  html+='</tbody></table>';
+  document.getElementById('heatmap-wrap').innerHTML=html;
+}
+
+/* ── View switching ── */
+function showView(id, btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('v-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='byco' && !document.querySelector('.co-btn.active')) renderCO('Myanmar');
+  if(id==='byind' && !document.getElementById('ind-list').innerHTML) buildIndList();
+  if(id==='heatmap' && !document.getElementById('heatmap-wrap').innerHTML) buildHeatmap();
+}
+
+/* ── Init ── */
+buildStatCards();
+buildActorCards();
+buildCOFilter();
+buildIndList();
+buildHeatmap();
+setTimeout(()=>{
+  makeChart('c-o1',['1','1.2','1.3'],210);
+  makeChart('c-o2',['2','2.2','2.3'],190);
+  makeChart('c-o3',['3','3.2','3.3'],190);
+},50);
+</script>
+</body>
+</html>
